@@ -1,12 +1,12 @@
-package blackJack.controller;
+package blackjack.controller;
 
-import blackJack.domain.mongo.Game;
-import blackJack.exception.BadRequestException;
-import blackJack.exception.NotFoundException;
-import blackJack.model.Card;
-import blackJack.model.GameStatus;
-import blackJack.model.Outcome;
-import blackJack.service.GameService;
+import blackjack.domain.mongo.Game;
+import blackjack.exception.BadRequestException;
+import blackjack.exception.NotFoundException;
+import blackjack.model.Card;
+import blackjack.model.GameStatus;
+import blackjack.model.Outcome;
+import blackjack.service.GameService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

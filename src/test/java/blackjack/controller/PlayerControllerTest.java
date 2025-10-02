@@ -1,9 +1,9 @@
-package blackJack.controller;
+package blackjack.controller;
 
-import blackJack.domain.mysql.Player;
-import blackJack.dto.PlayerRanking;
-import blackJack.service.PlayerService;
-import blackJack.exception.NotFoundException;
+import blackjack.domain.mysql.Player;
+import blackjack.dto.PlayerRanking;
+import blackjack.service.PlayerService;
+import blackjack.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

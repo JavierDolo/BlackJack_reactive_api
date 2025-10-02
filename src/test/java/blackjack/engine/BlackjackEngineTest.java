@@ -1,8 +1,8 @@
-package blackJack.engine;
+package blackjack.engine;
 
-import blackJack.model.Card;
-import blackJack.model.Outcome;
-import blackJack.service.BlackjackEngine;
+import blackjack.model.Card;
+import blackjack.model.Outcome;
+import blackjack.service.BlackjackEngine;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
