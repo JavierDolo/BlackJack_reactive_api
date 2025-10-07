@@ -47,7 +47,6 @@ public class PlayerService {
         return repo.findById(playerId)
                 .switchIfEmpty(Mono.error(new NotFoundException("Player " + playerId + " not found")))
                 .flatMap(p -> {
-                    // Evitar que el balance quede negativo por error
                     if (p.getBalance().compareTo(amount) < 0) {
                         return Mono.error(new BadRequestException("Insufficient balance for player " + p.getName()));
                     }
