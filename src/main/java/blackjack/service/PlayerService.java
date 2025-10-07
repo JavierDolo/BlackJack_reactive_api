@@ -4,6 +4,7 @@ import blackjack.domain.mysql.Player;
 import blackjack.domain.mysql.PlayerRepository;
 import blackjack.dto.PlayerRanking;
 import blackjack.exception.NotFoundException;
+import blackjack.exception.BadRequestException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,7 +21,8 @@ public class PlayerService {
     }
 
     public Mono<Player> findOrCreate(String name) {
-        return repo.findByName(name).switchIfEmpty(repo.save(Player.of(name)));
+        return repo.findByName(name)
+                .switchIfEmpty(repo.save(Player.of(name)));
     }
 
     public Mono<Player> changeName(Long playerId, String newName) {
@@ -33,21 +35,36 @@ public class PlayerService {
     }
 
     public Mono<Player> recordWin(Long playerId, BigDecimal amount) {
-        return repo.findById(playerId).flatMap(p -> {
-            p.recordWin(amount);
-            return repo.save(p);
-        });
+        return repo.findById(playerId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Player " + playerId + " not found")))
+                .flatMap(p -> {
+                    p.recordWin(amount);
+                    return repo.save(p);
+                });
     }
 
     public Mono<Player> recordLoss(Long playerId, BigDecimal amount) {
-        return repo.findById(playerId).flatMap(p -> {
-            p.recordLoss(amount);
-            return repo.save(p);
-        });
+        return repo.findById(playerId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Player " + playerId + " not found")))
+                .flatMap(p -> {
+                    // Evitar que el balance quede negativo por error
+                    if (p.getBalance().compareTo(amount) < 0) {
+                        return Mono.error(new BadRequestException("Insufficient balance for player " + p.getName()));
+                    }
+                    p.recordLoss(amount);
+                    return repo.save(p);
+                });
     }
 
     public Flux<PlayerRanking> ranking() {
         return repo.findTop20ByOrderByWinsDesc()
-                .map(p -> new PlayerRanking(p.getId(), p.getName(), p.getGamesPlayed(), p.getWins(), p.getLosses(), p.getBalance()));
+                .map(p -> new PlayerRanking(
+                        p.getId(),
+                        p.getName(),
+                        p.getGamesPlayed(),
+                        p.getWins(),
+                        p.getLosses(),
+                        p.getBalance()
+                ));
     }
 }
