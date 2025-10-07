@@ -3,7 +3,10 @@ package blackjack.domain.mongo;
 import blackjack.model.Card;
 import blackjack.model.GameStatus;
 import blackjack.model.Outcome;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -17,6 +20,7 @@ public class Game {
     @Id
     private String id;
 
+    @Indexed
     private Long playerId;
 
     private List<Card> deck = new ArrayList<>();
@@ -26,10 +30,13 @@ public class Game {
     private BigDecimal bet = BigDecimal.ZERO;
 
     private GameStatus status = GameStatus.PLAYER_TURN;
-    private Outcome outcome; // null until finished
+    private Outcome outcome;
 
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt = Instant.now();
+    @CreatedDate
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
 
     public Game() {}
 

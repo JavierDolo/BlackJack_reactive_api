@@ -4,9 +4,9 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://mongo:27017/blackjack}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/blackjack}
   r2dbc:
-    url: ${R2DBC_URL:r2dbc:pool:mysql://mysql:3306/blackjack}
+    url: ${R2DBC_URL:r2dbc:pool:mysql://localhost:3306/blackjack}
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:root}
 
@@ -22,3 +22,11 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
+
+spring:
+  flyway:
+    enabled: true
+    url: jdbc:mysql://mysql:3306/blackjack
+    user: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    locations: classpath:db/migration

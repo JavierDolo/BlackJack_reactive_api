@@ -2,7 +2,6 @@ package blackjack.service;
 
 import blackjack.domain.mongo.Game;
 import blackjack.domain.mongo.GameRepository;
-import blackjack.domain.mysql.Player;
 import blackjack.dto.PlayRequest;
 import blackjack.dto.PlayRequest.Action;
 import blackjack.exception.BadRequestException;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -45,8 +43,8 @@ public class GameService {
                     g.getPlayerHand().add(deck.remove(0));
                     g.getDealerHand().add(deck.remove(0));
 
-                    Hand playerHand = new Hand(); playerHand.setCards(g.getPlayerHand());
-                    Hand dealerHand = new Hand(); dealerHand.setCards(g.getDealerHand());
+                    Hand playerHand = new Hand();
+                    playerHand.setCards(g.getPlayerHand());
 
                     if (playerHand.isBlackjack()) {
                         g.setStatus(GameStatus.FINISHED);
@@ -54,19 +52,20 @@ public class GameService {
                     } else {
                         g.setStatus(GameStatus.PLAYER_TURN);
                     }
-                    g.setCreatedAt(Instant.now());
-                    g.setUpdatedAt(Instant.now());
-                    return games.save(g).flatMap(saved ->
-                        // pay immediate blackjack 3:2 if player has it
-                        (saved.getOutcome() == Outcome.PLAYER_BLACKJACK ?
-                            players.recordWin(saved.getPlayerId(), new BigDecimal("1.5")) : Mono.just(new Player()))
-                        .thenReturn(saved)
-                    );
+
+                    return games.save(g).flatMap(saved -> {
+                        if (saved.getOutcome() == Outcome.PLAYER_BLACKJACK) {
+                            BigDecimal payout = saved.getBet().multiply(BigDecimal.valueOf(1.5));
+                            return players.recordWin(saved.getPlayerId(), payout).thenReturn(saved);
+                        }
+                        return Mono.just(saved);
+                    });
                 });
     }
 
     public Mono<Game> get(String id) {
-        return games.findById(id).switchIfEmpty(Mono.error(new NotFoundException("Game " + id + " not found")));
+        return games.findById(id)
+                .switchIfEmpty(Mono.error(new NotFoundException("Game " + id + " not found")));
     }
 
     public Mono<Void> delete(String id) {
@@ -92,14 +91,13 @@ public class GameService {
             switch (action) {
                 case HIT -> {
                     draw(g.getPlayerHand(), g.getDeck());
-                    if (new Hand(){{
-                        setCards(g.getPlayerHand());
-                    }}.isBust()) {
+                    Hand playerHand = new Hand();
+                    playerHand.setCards(g.getPlayerHand());
+                    if (playerHand.isBust()) {
                         g.setStatus(GameStatus.FINISHED);
                         g.setOutcome(Outcome.DEALER_WIN);
                         return endAndPersist(g, false);
                     } else {
-                        g.setUpdatedAt(Instant.now());
                         return games.save(g);
                     }
                 }
@@ -113,11 +111,12 @@ public class GameService {
                     if (g.getPlayerHand().size() != 2) {
                         return Mono.error(new BadRequestException("DOUBLE only allowed on first turn"));
                     }
-                    g.setBet(g.getBet().multiply(new BigDecimal("2")));
+                    g.setBet(g.getBet().multiply(BigDecimal.valueOf(2)));
                     draw(g.getPlayerHand(), g.getDeck());
-                    if (new Hand(){{
-                        setCards(g.getPlayerHand());
-                    }}.isBust()) {
+
+                    Hand handAfterDouble = new Hand();
+                    handAfterDouble.setCards(g.getPlayerHand());
+                    if (handAfterDouble.isBust()) {
                         g.setStatus(GameStatus.FINISHED);
                         g.setOutcome(Outcome.DEALER_WIN);
                         return endAndPersist(g, false);
@@ -136,10 +135,8 @@ public class GameService {
     }
 
     private Mono<Game> endAndPersist(Game g, boolean playerWon) {
-        g.setUpdatedAt(Instant.now());
         Mono<Game> saved = games.save(g);
-        if (g.getBet() == null) g.setBet(BigDecimal.ONE);
-        BigDecimal amount = g.getBet();
+        BigDecimal amount = g.getBet().compareTo(BigDecimal.ZERO) > 0 ? g.getBet() : BigDecimal.ONE;
         return saved.flatMap(s -> (playerWon
                 ? players.recordWin(s.getPlayerId(), amount)
                 : players.recordLoss(s.getPlayerId(), amount)
@@ -153,7 +150,9 @@ public class GameService {
     }
 
     private void draw(List<Card> hand, List<Card> deck) {
-        if (deck.isEmpty()) throw new IllegalStateException("Deck exhausted");
+        if (deck.isEmpty()) {
+            throw new BadRequestException("Deck exhausted");
+        }
         hand.add(deck.remove(0));
     }
 }

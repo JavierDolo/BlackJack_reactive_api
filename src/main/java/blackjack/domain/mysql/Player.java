@@ -44,7 +44,8 @@ public class Player {
     }
 
     public static Player of(String name) {
-        return new Player(null, name, 0, 0, 0, BigDecimal.ZERO, Instant.now());
+
+        return new Player(null, name, 0, 0, 0, BigDecimal.ZERO, null);
     }
 
     // getters and setters
