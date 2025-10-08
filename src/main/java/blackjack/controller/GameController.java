@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/game")
+@Tag(name = "Game", description = "Operations related to Blackjack games")
 public class GameController {
 
     private final GameService service;
@@ -31,8 +33,10 @@ public class GameController {
             summary = "Create a new Blackjack game",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Game created successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ApiError.class))),
-                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = ApiError.class)))
+                    @ApiResponse(responseCode = "400", description = "Invalid request",
+                            content = @Content(schema = @Schema(implementation = ApiError.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(schema = @Schema(implementation = ApiError.class)))
             }
     )
     @PostMapping("/new")
@@ -46,7 +50,8 @@ public class GameController {
             summary = "Get an existing Blackjack game by ID",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Game retrieved successfully"),
-                    @ApiResponse(responseCode = "404", description = "Game not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+                    @ApiResponse(responseCode = "404", description = "Game not found",
+                            content = @Content(schema = @Schema(implementation = ApiError.class)))
             }
     )
     @GetMapping("/{id}")
@@ -58,8 +63,10 @@ public class GameController {
             summary = "Play a move in an active Blackjack game",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Move applied successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid move", content = @Content(schema = @Schema(implementation = ApiError.class))),
-                    @ApiResponse(responseCode = "404", description = "Game not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+                    @ApiResponse(responseCode = "400", description = "Invalid move",
+                            content = @Content(schema = @Schema(implementation = ApiError.class))),
+                    @ApiResponse(responseCode = "404", description = "Game not found",
+                            content = @Content(schema = @Schema(implementation = ApiError.class)))
             }
     )
     @PostMapping("/{id}/play")
@@ -71,7 +78,8 @@ public class GameController {
             summary = "Delete a Blackjack game by ID",
             responses = {
                     @ApiResponse(responseCode = "204", description = "Game deleted successfully"),
-                    @ApiResponse(responseCode = "404", description = "Game not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+                    @ApiResponse(responseCode = "404", description = "Game not found",
+                            content = @Content(schema = @Schema(implementation = ApiError.class)))
             }
     )
     @DeleteMapping("/{id}/delete")

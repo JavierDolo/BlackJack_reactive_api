@@ -6,6 +6,8 @@ services:
       MYSQL_DATABASE: blackjack
     ports:
       - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 10s
@@ -16,6 +18,8 @@ services:
     image: mongo:6
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
 
   app:
     build: .
@@ -31,3 +35,7 @@ services:
         condition: service_healthy
       mongo:
         condition: service_started
+
+volumes:
+  mysql_data:
+  mongo_data:
