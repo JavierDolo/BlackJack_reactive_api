@@ -36,7 +36,7 @@ public class GameService {
                     g.setPlayerId(player.getId());
                     g.setDeck(Deck.newShuffled());
 
-                    // initial deal
+                    // Reparto inicial
                     List<Card> deck = g.getDeck();
                     g.getPlayerHand().add(deck.remove(0));
                     g.getDealerHand().add(deck.remove(0));
@@ -46,20 +46,31 @@ public class GameService {
                     Hand playerHand = new Hand();
                     playerHand.setCards(g.getPlayerHand());
 
-                    if (playerHand.isBlackjack()) {
+                    Hand dealerHand = new Hand();
+                    dealerHand.setCards(g.getDealerHand());
+
+                    boolean playerBJ = playerHand.isBlackjack();
+                    boolean dealerBJ = dealerHand.isBlackjack();
+
+                    if (playerBJ && dealerBJ) {
+                        g.setStatus(GameStatus.FINISHED);
+                        g.setOutcome(Outcome.PUSH);
+                        g.setBet(BigDecimal.ONE);
+                        return games.save(g); // empate, no cambia balance
+                    } else if (playerBJ) {
                         g.setStatus(GameStatus.FINISHED);
                         g.setOutcome(Outcome.PLAYER_BLACKJACK);
+                        g.setBet(BigDecimal.ONE);
+                        return endAndPersist(g, true);
+                    } else if (dealerBJ) {
+                        g.setStatus(GameStatus.FINISHED);
+                        g.setOutcome(Outcome.DEALER_WIN);
+                        g.setBet(BigDecimal.ONE);
+                        return endAndPersist(g, false);
                     } else {
                         g.setStatus(GameStatus.PLAYER_TURN);
+                        return games.save(g);
                     }
-
-                    return games.save(g).flatMap(saved -> {
-                        if (saved.getOutcome() == Outcome.PLAYER_BLACKJACK) {
-                            BigDecimal payout = saved.getBet().multiply(BigDecimal.valueOf(1.5));
-                            return players.recordWin(saved.getPlayerId(), payout).thenReturn(saved);
-                        }
-                        return Mono.just(saved);
-                    });
                 });
     }
 
@@ -137,8 +148,12 @@ public class GameService {
     private Mono<Game> endAndPersist(Game g, boolean playerWon) {
         Mono<Game> saved = games.save(g);
         BigDecimal amount = g.getBet().compareTo(BigDecimal.ZERO) > 0 ? g.getBet() : BigDecimal.ONE;
+
+        boolean blackjackWin = g.getOutcome() == Outcome.PLAYER_BLACKJACK;
+
         return saved.flatMap(s -> (playerWon
-                ? players.recordWin(s.getPlayerId(), amount)
+                ? players.recordWin(s.getPlayerId(),
+                blackjackWin ? amount.multiply(BigDecimal.valueOf(1.5)) : amount)
                 : players.recordLoss(s.getPlayerId(), amount)
         ).thenReturn(s));
     }
