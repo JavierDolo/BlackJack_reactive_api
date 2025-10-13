@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Table("players")
 public class Player {
+    public static final BigDecimal INITIAL_BALANCE = BigDecimal.valueOf(100);
 
     @Id
     private Long id;
@@ -45,7 +46,7 @@ public class Player {
 
     public static Player of(String name) {
 
-        return new Player(null, name, 0, 0, 0, BigDecimal.ZERO, null);
+        return new Player(null, name, 0, 0, 0, INITIAL_BALANCE, null);
     }
 
     // getters and setters
