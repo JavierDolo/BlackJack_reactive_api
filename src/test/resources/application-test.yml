@@ -1,6 +1,10 @@
 spring:
   flyway:
-    enabled: false
+    enabled: true
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:blackjack}
+    user: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    locations: classpath:db/migration
 
   data:
     mongodb:

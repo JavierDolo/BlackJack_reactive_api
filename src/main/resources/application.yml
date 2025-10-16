@@ -7,7 +7,7 @@ spring:
       uri: ${MONGODB_URI:mongodb://localhost:27017/blackjack}
 
   r2dbc:
-    url: ${R2DBC_URL:r2dbc:pool:mysql://localhost:3306/blackjack}
+    url: ${R2DBC_URL:r2dbc:pool:mysql://${MYSQL_HOST:localhost}:3306/blackjack}
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:root}
 
@@ -16,7 +16,7 @@ spring:
 
   flyway:
     enabled: true
-    url: jdbc:mysql://mysql:3306/blackjack
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:blackjack}
     user: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:root}
     locations: classpath:db/migration

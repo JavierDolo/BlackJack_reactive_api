@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -19,17 +20,8 @@ import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.*;
 
-@WebFluxTest(controllers = GameController.class)
-@Import(GlobalExceptionHandler.class)
-@EnableAutoConfiguration(exclude = {
-        org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.data.mongo.MongoReactiveDataAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.data.mongo.MongoReactiveRepositoriesAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class
-})
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class GameControllerTest {
 
     @Autowired
